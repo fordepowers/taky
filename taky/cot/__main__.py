@@ -115,8 +115,18 @@ def main():
                 snapshot = tracemalloc.take_snapshot()
                 stats = snapshot.statistics("lineno")
 
+                logging.info("----- [ SNIP HERE ] -----")
+                logging.info("COT Server: %4d clients", len(cot_srv.clients))
+                logging.info("Router:     %4d clients", len(cot_srv.router.clients))
+                logging.info(
+                    "Persist:    %4d events", len(cot_srv.router.persist.events)
+                )
+                logging.info("Top Memory Usage:")
+
                 for stat in stats[:25]:
                     logging.info(stat)
+
+                logging.info("----- [ END SNIP  ] -----")
     except KeyboardInterrupt:
         pass
     except Exception as exc:  # pylint: disable=broad-except

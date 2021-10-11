@@ -6,11 +6,14 @@ import argparse
 import configparser
 import pdb
 
+import tracemalloc
+
 from taky import __version__
 from taky.cot import COTServer
 from taky.config import load_config
 
 got_sigterm = False
+want_snapshot = False
 
 
 def handle_term(sig, frame):  # pylint: disable=unused-argument
@@ -23,6 +26,11 @@ def handle_term(sig, frame):  # pylint: disable=unused-argument
 def handle_pdb(sig, frame):  # pylint: disable=unused-argument
     """ Signal handler """
     pdb.Pdb().set_trace(frame)
+
+
+def handle_tracemalloc(sig, frame):  # pylint: disable=unused-argument
+    """ Signal handler """
+    want_snapshot = True
 
 
 def arg_parse():
@@ -84,6 +92,8 @@ def main():
     # TODO: Check for ipv6 support
     if args.debug:
         signal.signal(signal.SIGUSR1, handle_pdb)
+        signal.signal(signal.SIGUSR2, handle_tracemalloc)
+        tracemalloc.start(5)
 
     cot_srv = COTServer()
     try:
@@ -97,6 +107,14 @@ def main():
     try:
         while not got_sigterm:
             cot_srv.loop()
+
+            if want_snapshot:
+                want_snapshot = False
+                snapshot = tracemalloc.take_snapshot()
+                stats = snapshot.statistics("lineno")
+
+                for stat in stats[:25]:
+                    logging.info(stat)
     except KeyboardInterrupt:
         pass
     except Exception as exc:  # pylint: disable=broad-except

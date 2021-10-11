@@ -58,7 +58,6 @@ class COTServer:
         self.ssl_ctx = None
 
         self.started = -1
-        self.last_debug = -1
 
     def sock_setup(self):
         """
@@ -193,12 +192,6 @@ class COTServer:
         """
         Main loop. Call outside this object in a "while True" block.
         """
-
-        # dbussert is my hero
-        if (time.time() - self.last_debug) > 10:
-            self.lgr.debug("Number of clients: %d", len(self.clients))
-            self.last_debug = time.time()
-
         rd_clients = list(self.clients)
         rd_clients.append(self.srv)
         if self.mon:

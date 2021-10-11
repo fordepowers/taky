@@ -30,6 +30,7 @@ def handle_pdb(sig, frame):  # pylint: disable=unused-argument
 
 def handle_tracemalloc(sig, frame):  # pylint: disable=unused-argument
     """ Signal handler """
+    global want_snapshot
     want_snapshot = True
 
 
@@ -70,6 +71,7 @@ def arg_parse():
 def main():
     """ taky COT server """
     global got_sigterm
+    global want_snapshot
     ret = 0
 
     (argp, args) = arg_parse()
